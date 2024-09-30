@@ -68,12 +68,15 @@ export const signUp = async (req, res) => {
             contact: contact,
             password: hashSync(password, salt),
           });
+          console.log(doc);
           //otp
           const otp = uuidv4().slice(0, 6);
           console.log(otp, "==>> otp ban gaya");
           doc.otp = otp;
           doc.expiresIn = Date.now() + 60000; // 1 minutes
+
           let savedUser = await doc.save();
+          console.log(savedUser, "==>> savedUser");
           if (savedUser.errors) {
             return res
               .status(INTERNALERROR)
@@ -83,7 +86,10 @@ export const signUp = async (req, res) => {
           } else {
             // return res.send(savedUser);
             savedUser.Password = undefined;
-            const token = GenerateToken({ data: savedUser, expiresIn: "24h" });
+            const token = GenerateToken({
+              data: savedUser._id,
+              expiresIn: "24h",
+            });
 
             // sendEmail()
             const emailResponse = await sendEmailOTP(email, otp);
@@ -180,12 +186,12 @@ export const login = async (req, res) => {
     if (email && password) {
       // return res.send("login controller")
 
-      let user = await Users.findOne({ Email: email });
+      let user = await Users.findOne({ email: email });
       console.log(user, "===>> user (login email check)");
       if (user) {
-        const isValid = compareSync(password, user.Password);
-        if (user.Email === email && isValid) {
-          user.Password = undefined;
+        const isValid = compareSync(password, user.password);
+        if (user.email === email && isValid) {
+          user.password = undefined;
           const token = GenerateToken({ data: user, expiresIn: "24h" });
           res.cookie("token", token, { httpOnly: true });
           res.status(OK).send(
@@ -230,6 +236,26 @@ export const login = async (req, res) => {
     //         data: null,
     //     })
     // );
+  }
+};
+
+export const isUserLoggedIn = async (req, res) => {
+  try {
+    const userData = req.user;
+    if (userData) {
+      console.log(userData, "====>> userData");
+      return res.status(200).json({
+        status: true,
+        message: "User is logged in",
+        data: userData,
+      });
+    } else {
+      console.log("User is not logged in");
+    }
+  } catch (error) {
+    return res
+      .status(500) //INTERNALERROR
+      .send(error.message);
   }
 };
 

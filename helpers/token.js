@@ -1,5 +1,6 @@
 import pkg from "jsonwebtoken";
 import dotenv from "dotenv";
+import Users from "../models/Users.js ";
 
 const { sign, verify } = pkg;
 
@@ -35,7 +36,10 @@ export const validateToken = async (req, res, next) => {
       const { result } = verify(token, process.env.JWT_SECRET_KEY);
       // Get User from Token
       console.log(verification, "====>>verification");
-      req.user = result;
+
+      // find the current user
+      const findUser = await Users.findById(result);
+      req.user = findUser;
       next();
     } catch (error) {
       console.log(error, "===>>error");

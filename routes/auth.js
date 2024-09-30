@@ -1,12 +1,13 @@
 import express from "express";
 import {
   forgotPasswordEmail,
+  isUserLoggedIn,
   login,
   resetPasswordEmail,
   signUp,
   verifyEmail,
 } from "../controller/auth.js";
-import { verifyToken, validateToken } from "../helpers/token.js";
+import { validateToken } from "../helpers/token.js";
 
 export const authRoutes = express.Router();
 
@@ -16,6 +17,8 @@ authRoutes.post("/login", login);
 
 authRoutes.post("/verifyEmail", validateToken, verifyEmail);
 
-authRoutes.post("/forgotPassword", forgotPasswordEmail);
+authRoutes.get("/isuserloggedin", validateToken, isUserLoggedIn);
 
-authRoutes.put("/resetPassword", resetPasswordEmail);
+// authRoutes.post("/forgotPassword", forgotPasswordEmail);
+
+// authRoutes.put("/resetPassword", resetPasswordEmail);
