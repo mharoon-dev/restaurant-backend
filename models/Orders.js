@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 
 const OrderSchema = new mongoose.Schema(
   {
-    userId: {
-      type: String,
+    userDetails: {
+      type: Object,
       required: true,
     },
     products: {
@@ -18,9 +18,18 @@ const OrderSchema = new mongoose.Schema(
       type: Object,
       required: true,
     },
+    quantity: {
+      type: Number,
+      required: true,
+      default: 1,
+    },
     phoneNumber: {
       type: String,
       required: true,
+    },
+    cashOnDelivery: {
+      type: Boolean,
+      default: false,
     },
     status: {
       type: String,

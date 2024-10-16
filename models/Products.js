@@ -1,5 +1,16 @@
 import mongoose from "mongoose";
 
+const variationSchema = new mongoose.Schema({
+  size: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+  },
+});
+
 const productSchema = new mongoose.Schema(
   {
     title: {
@@ -17,21 +28,12 @@ const productSchema = new mongoose.Schema(
     categories: {
       type: Array,
     },
-    size: {
-      type: Array,
-    },
-    color: {
-      type: Array,
-    },
-    price: {
+    sellsCount: {
       type: Number,
-      required: true,
+      default: 0,
     },
-    inStock: {
-      type: Boolean,
-      default: true,
-    },
-  },
+    variations: [variationSchema], // Add variations array
+  },  
   {
     timestamps: true,
   }

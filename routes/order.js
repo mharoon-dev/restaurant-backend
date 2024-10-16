@@ -18,12 +18,12 @@ orderRoutes.post("/", createOrder);
 // update
 // http://localhost:5000/api/orders/:id
 // put
-orderRoutes.put("/:id", verifyTokenAndAdmin, updateOrder);
+orderRoutes.put("/:id",  updateOrder);
 
 // delete
 // http://localhost:5000/api/orders/:id
 // delete
-orderRoutes.delete("/:id", verifyTokenAndAdmin, deleteOrder);
+orderRoutes.delete("/:id",  deleteOrder);
 
 // get user orders
 // http:localhost:5000/api/orders/find/:userId
@@ -33,7 +33,7 @@ orderRoutes.get("/find/:userId", getOrder);
 // get all orders
 // http://localhost:5000/api/orders
 // get
-orderRoutes.get("/", verifyTokenAndAdmin, getAllOrder);
+orderRoutes.get("/", getAllOrder);
 
 // get monthly income
 // http://localhost:5000/api/orders/income

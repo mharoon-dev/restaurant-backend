@@ -1,49 +1,61 @@
 import Order from "../models/Orders.js";
-import User from "../models/Users.js";
+// import User from "../models/Users.js";
+import Stripe from "stripe"; // Import Stripe
+import Product from "../models/Products.js";
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // create
 export const createOrder = async (req, res) => {
-  console.log(req.body);
-  const { userId, products, amount, address, phoneNumber } = req.body;
-  if (!userId || !products || !amount || !address || !phoneNumber) {
+  const {
+    userDetails,
+    products,
+    amount,
+    address,
+    phoneNumber,
+    paymentIntentId,
+    cashOnDelivery,
+  } = req.body;
+
+  if (!userDetails || !products || !amount || !address || !phoneNumber) {
     return res.status(400).json({ message: "All fields are required" });
-  } else if (products.length === 0) {
-    return res.status(400).json({ message: "Cart is empty" });
-  } else {
-    const newOrder = new Order(req.body);
+  }
 
-    try {
-      const bonusAmount = (amount / 100) * 10;
-      console.log("Calculated bonus:", bonusAmount);
-      const savedOrder = await newOrder.save();
+  try {
+    if (cashOnDelivery === false) {
+      const paymentIntent = await stripe?.paymentIntents?.retrieve?.(
+        paymentIntentId
+      );
 
-      // update the bonus of the byRefrenceCodeUser
-      const findUser = await User.findById(userId);
-
-      console.log(findUser);
-      console.log("user jis ne order kia hai upar hai");
-
-      if (findUser && findUser?.byRefrence) {
-        const updateUserBouns = await User.findOne({
-          refrenceCode: findUser?.byRefrence,
-        });
-
-        if (updateUserBouns) {
-          updateUserBouns.bonus += bonusAmount;
-          await updateUserBouns.save();
-          console.log("Bonus updated successfully:", updateUserBouns);
-        } else {
-          console.log("No user found with the given reference code");
-        }
-      } else {
-        console.log("User does not have a reference code");
+      if (paymentIntent?.status !== "succeeded") {
+        return res.status(400).json({ message: "Payment not confirmed" });
       }
-
-      res.status(200).json(savedOrder);
-    } catch (error) {
-      console.error("Error in the order creation flow:", error);
-      res.status(500).json({ message: "An error occurred", error });
     }
+
+    const newOrder = new Order({
+      userDetails,
+      products,
+      amount,
+      address,
+      phoneNumber,
+      cashOnDelivery,
+    });
+    const savedOrder = await newOrder.save();
+
+    // update the sellsCount of product
+    for (const product of products) {
+      const updatedProduct = await Product.findOneAndUpdate(
+        { _id: product._id },
+        { $inc: { sellsCount: product.quantity } },
+        { new: true }
+      );
+    }
+
+    res.status(200).json(savedOrder);
+  } catch (error) {
+    console.error("Error creating order:", error); // Log the error
+    res
+      .status(500)
+      .json({ message: "An error occurred during order creation", error });
   }
 };
 
@@ -75,8 +87,9 @@ export const deleteOrder = async (req, res) => {
 
 // get user orders
 export const getOrder = async (req, res) => {
+  const userId = req.params.userId;
   try {
-    const orders = await Order.find({ userId: req.params.userId });
+    const orders = await Order.find({ "userDetails._id": userId });
     res.status(200).json(orders);
   } catch (error) {
     res.status(500).json(error);

@@ -1,53 +1,54 @@
-import mongoose from "mongoose";
-// import validator from 'validator';
+import mongoose from 'mongoose';
 
-const register = mongoose.Schema(
-  {
-    userName: {
-      type: String,
-      required: [true, "Please Add User Name"],
-      minlength: 3,
-      maxlength: 20,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: [true, "Please Add Email"],
-      unique: true,
-      trim: true,
-      lowercase: true,
-      // validate: [validator.isEmail, 'Please provide a valid email'],
-    },
-    password: {
-      type: String,
-      required: [true, "Please Add Password"],
-      minlength: 8,
-      trim: true,
-    },
-    contact: {
-      type: String,
-      required: [true, "Please Add Contact"],
-      trim: true,
-    },
-    address: {
-      type: String,
-      required: [true, "Please Add Address"],
-      trim: true,
-    },
-    otp: {
-      type: String,
-    },
-    expiresIn: {
-      type: Date,
-    },
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
+const { Schema } = mongoose;
+
+const userSchema = new Schema({
+  userName: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
   },
-  {
-    timestamps: true,
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  contact: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  address: {
+    type: String,
+    required: true
+  },
+  zipCode: {
+    type: String,
+    required: true
+  },
+  otp: {
+    type: String,
+    required: false // Only required when OTP is generated
+  },
+  expiresIn: {
+    type: Date,
+    required: false // Only relevant when OTP is generated
+  },
+  isVerified: {
+    type: Boolean,
+    default: false // To track if the user is verified
   }
-);
+}, {
+  timestamps: true // Automatically adds createdAt and updatedAt timestamps
+});
 
-export default mongoose.model("Users", register);
+const User = mongoose.model('User', userSchema);
+
+export default User;

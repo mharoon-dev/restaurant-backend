@@ -4,13 +4,24 @@ export const usersRoutes = express.Router();
 
 // create
 export const createProduct = async (req, res) => {
-  // check the category is exsist or not
-  console.log(req.body);
-  const newProduct = new Product(req.body);
   try {
-    const savedProduct = await newProduct.save();
-    console.log(savedProduct);
+    console.log(req.body);
+    const { title, img, desc, categories, variations, inStock } = req.body;
 
+    if (!title || !img || !desc || !variations || !categories) {
+      return res.status(400).send({ message: "Required fields are missing!" });
+    }
+
+    const newProduct = new Product({
+      title,
+      img,
+      desc,
+      categories,
+      variations,
+      sellsCount: 0,
+    });
+
+    const savedProduct = await newProduct.save();
     res.status(200).json(savedProduct);
   } catch (error) {
     res.status(500).json(error);
@@ -49,6 +60,30 @@ export const getProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     res.status(200).json(product);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
+// get mostsells
+export const getMostSells = async (req, res) => {
+  try {
+    // get the category name from query
+    const category = req.query.category;
+    if (category) {
+      const products = await Product.find({
+        categories: {
+          $in: [category],
+        },
+      })
+        .sort({ sellsCount: -1 })
+        .limit(4);
+      res.status(200).json(products);
+      return;
+    } else {
+      const products = await Product.find().sort({ sellsCount: -1 }).limit(3);
+      res.status(200).json(products);
+    }
   } catch (err) {
     res.status(500).json(err);
   }

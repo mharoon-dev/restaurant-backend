@@ -25,9 +25,9 @@ export const signUp = async (req, res) => {
   console.log(req.body, "===>>> req.body");
 
   try {
-    const { userName, email, password, contact, address } = req.body;
+    const { userName, email, password, contact, address, zipCode } = req.body;
 
-    if (!userName || !email || !password || !contact || !address) {
+    if (!userName || !email || !password || !contact || !address || !zipCode) {
       return res
         .status(BADREQUEST) //BADREQUEST
         .send(
@@ -36,7 +36,7 @@ export const signUp = async (req, res) => {
       // .send("Missing Fields");
     }
 
-    const user = await Users.findOne({ Email: email });
+    const user = await Users.findOne({ email: email });
 
     console.log(user, "====>> user (checking email)");
     if (user) {
@@ -47,7 +47,7 @@ export const signUp = async (req, res) => {
         })
       );
     } else {
-      const user = await Users.findOne({ UserName: userName });
+      const user = await Users.findOne({ userName: userName });
       console.log(user, "====>> user (checking username)");
       if (user) {
         return res.status(ALREADYEXISTS).send(
@@ -67,42 +67,38 @@ export const signUp = async (req, res) => {
             address: address,
             contact: contact,
             password: hashSync(password, salt),
+            zipCode: zipCode,
           });
           console.log(doc);
+          let savedUser = await doc.save();
+
           //otp
           const otp = uuidv4().slice(0, 6);
           console.log(otp, "==>> otp ban gaya");
           doc.otp = otp;
-          doc.expiresIn = Date.now() + 60000; // 1 minutes
+          doc.expiresIn = Date.now() + 60000;
 
-          let savedUser = await doc.save();
+          savedUser = await doc.save();
+
           console.log(savedUser, "==>> savedUser");
-          if (savedUser.errors) {
-            return res
-              .status(INTERNALERROR)
-              .send(
-                sendError({ status: false, message: error.message, error })
-              );
-          } else {
-            // return res.send(savedUser);
-            savedUser.Password = undefined;
-            const token = GenerateToken({
-              data: savedUser._id,
-              expiresIn: "24h",
-            });
+          // return res.send(savedUser);
+          savedUser.Password = undefined;
+          const token = GenerateToken({
+            data: savedUser._id,
+            expiresIn: "24h",
+          });
 
-            // sendEmail()
-            const emailResponse = await sendEmailOTP(email, otp);
+          // sendEmail()
+          const emailResponse = await sendEmailOTP(email, otp);
 
-            return res.status(CREATED).send(
-              sendSuccess({
-                status: true,
-                message: responseMessages.SUCCESS_REGISTRATION,
-                token,
-                data: savedUser,
-              })
-            );
-          }
+          return res.status(CREATED).send(
+            sendSuccess({
+              status: true,
+              message: responseMessages.SUCCESS_REGISTRATION,
+              token,
+              data: savedUser,
+            })
+          );
         } else {
           return res.status(FORBIDDEN).send(
             sendError({
@@ -394,288 +390,3 @@ export const resetPasswordEmail = async (req, res) => {
     );
   }
 };
-
-// @desc    RefreshToken
-// @route   GET api/auth/refreshToken
-// @access  Public
-
-// export const refreshToken = async (req, res) => {
-//   try {
-//     const { token } = req.body;
-//     if (token) {
-//       // Decode Token
-//       const { result } = decode(token);
-//       let user = result;
-//       if (user) {
-//         if (!user.IsActivate) {
-//           return res.status(OK).send(
-//             sendSuccess({
-//               status: true,
-//               message:
-//                 'User is deactivated, sign up again from a different email address',
-//               data: user,
-//             })
-//           );
-//         }
-//         // generate new token
-//         const newToken = GenerateToken({ data: user, expiresIn: '1m' });
-//         res.status(OK).send(
-//           sendSuccess({
-//             status: true,
-//             message: 'Refresh Token Generated',
-//             token: newToken,
-//           })
-//         );
-//       } else {
-//         return res
-//           .status(NOTFOUND)
-//           .send(sendError({ status: false, message: NO_USER }));
-//       }
-//     } else {
-//       return res
-//         .status(BADREQUEST)
-//         .send(sendError({ status: false, message: MISSING_FIELDS }));
-//     }
-//   } catch (error) {
-//     return res.status(401).send({
-//       status: 'failed',
-//       message: 'Unauthorized User, Not A Valid Token',
-//     });
-//   }
-// };
-
-// @desc    CHANGEPASSWORD
-// @route   PUT api/auth/changePassword
-// @access  Private
-
-// export const changePassword = async (req, res) => {
-//   const userDetails = req.user;
-//   try {
-//     const user = await Users.findOne({
-//       'Authentication.Email': userDetails.Authentication.Email,
-//     });
-//     const { password, confirmPassword } = req.body;
-//     if (password && confirmPassword) {
-//       if (password !== confirmPassword) {
-//         return res
-//           .status(BADREQUEST)
-//           .send(
-//             sendError({ status: false, message: PASSWORD_AND_CONFIRM_NO_MATCH })
-//           );
-//       } else {
-//         const salt = genSaltSync(10);
-//         const newPassword = hashSync(password, salt);
-//         const isValid = compareSync(password, user.Authentication.Password);
-//         if (isValid) {
-//           return res.status(OK).send(
-//             sendSuccess({
-//               status: false,
-//               message: PASSWORD_FAILED,
-//               data: null,
-//             })
-//           );
-//         }
-//         await Users.findByIdAndUpdate(req.user._id, {
-//           $set: { 'Authentication.Password': newPassword },
-//         });
-//         return res
-//           .status(OK)
-//           .send(
-//             sendSuccess({ status: true, message: PASSWORD_CHANGE, data: null })
-//           );
-//       }
-//     } else {
-//       return res
-//         .status(BADREQUEST)
-//         .send(sendError({ status: false, message: MISSING_FIELDS }));
-//     }
-//   } catch (error) {
-//     return res.status(INTERNALERROR).send(
-//       sendError({
-//         status: false,
-//         message: error.message,
-//         data: null,
-//       })
-//     );
-//   }
-// };
-
-// @desc    Get Logged In User details
-// @route   GET api/auth/userInfo
-// @access  Private
-
-// export const loggedInUser = async (req, res) => {
-//   try {
-//     return res.status(OK).send(
-//       sendSuccess({
-//         status: true,
-//         message: GET_SUCCESS_MESSAGES,
-//         data: req.user,
-//       })
-//     );
-//   } catch (error) {
-//     return res.status(INTERNALERROR).send(
-//       sendError({
-//         status: false,
-//         message: error.message,
-//         data: null,
-//       })
-//     );
-//   }
-// };
-
-// @desc    Send Reset Password Email
-// @route   POST api/auth/resetPasswordRequest
-// @access  Public
-
-// export const sendReset = async (req, res) => {
-//   try {
-//     const { email } = req.body;
-//     if (email) {
-//       const user = await Users.findOne({ 'Authentication.Email': email });
-//       if (user) {
-//         const secret = user._id + process.env.JWT_SECRET_KEY;
-//         const token = GenerateToken({ data: secret, expiresIn: '30m' });
-//         const link = `${process.env.WEB_LINK}/api/auth/resetPassword/${user._id}/${token}`;
-//         return res.status(OK).send(
-//           sendSuccess({
-//             status: true,
-//             message: RESET_LINK_SUCCESS,
-//             data: link,
-//           })
-//         );
-//       } else {
-//         return res
-//           .status(NOTFOUND)
-//           .send(sendError({ status: false, message: NO_USER_FOUND }));
-//       }
-//     } else {
-//       return res
-//         .status(BADREQUEST)
-//         .send(sendError({ status: false, message: MISSING_FIELD_EMAIL }));
-//     }
-//   } catch (error) {
-//     return res.status(INTERNALERROR).send(
-//       sendError({
-//         status: false,
-//         message: error.message,
-//         data: null,
-//       })
-//     );
-//   }
-// };
-
-// @desc    Send Reset Password Email
-// @route   POST api/auth/resetPasswordRequest
-// @access  Public
-
-// export const resetPassword = async (req, res) => {
-//     try {
-//         const { password, confirmPassword } = req.body;
-//         const { id, token } = req.params;
-//         const user = await Users.findById(id);
-//         if (user) {
-//             const secret = user._id + process.env.JWT_SECRET_KEY;
-
-//             ValidateToken({ token: token, key: secret });
-//             res.send(isVerifed);
-//         } else {
-//             return res
-//                 .status(NOTFOUND)
-//                 .send(sendError({ status: false, message: NO_USER_FOUND }));
-//         }
-
-//         // if (email) {
-//         //   const user = await Users.findOne({ "Authentication.Email": email });
-//         //   if(user){
-//         //     const secret = user._id + process.env.JWT_SECRET_KEY
-//         //     const token = GenerateToken({ data: secret , expiresIn :"30m" });
-//         //     const link = `${process.env.WEB_LINK}/api/auth/resetPassword/${user._id}/${token}`
-//         //     console.log(link);
-//         //     return res.status(OK).send(sendSuccess({status : true , message : RESET_LINK_SUCCESS , data : link}))
-
-//         //   } else {
-//         //     return res.status(NOTFOUND).send(sendError({status : false , message : NO_USER_FOUND}))
-//         //   }
-//         // } else {
-//         //   return res
-//         //     .status(BADREQUEST)
-//         //     .send(sendError({ status: false, message: MISSING_FIELD_EMAIL }));
-//         // }
-//     } catch (error) {
-//         return res.status(INTERNALERROR).send(
-//             sendError({
-//                 status: false,
-//                 message: error.message,
-//                 data: null,
-//             })
-//         );
-//     }
-// };
-
-// @desc    Logout User
-// @route   POST api/auth/logout
-// @access  Public
-
-// export const logout = async (req, res) => {
-//   try {
-//     const { token } = req.body;
-//     if (token) {
-//     } else {
-//       return res
-//         .status(BADREQUEST)
-//         .send(sendError({ status: false, message: MISSING_FIELDS }));
-//     }
-//   } catch (error) {
-//     return res.status(INTERNALERROR).send(
-//       sendError({
-//         status: false,
-//         message: error.message,
-//         data: null,
-//       })
-//     );
-//   }
-// };
-
-// @desc    Save DeviceId
-// @route   POST api/auth/saveDeviceId
-// @access  Public
-
-// export const addDeviceId = async (req, res) => {
-//   try {
-//     console.log(req.body);
-//     const { deviceId } = req.body;
-//     const id = req.user._id;
-//     if (deviceId) {
-//       let user = await Users.findOne({ _id: id });
-//       if (user) {
-//         // update user with this deveiceId
-//         user = await Users.findByIdAndUpdate(id, {
-//           $set: { 'Authentication.DeviceId': deviceId },
-//         });
-//         res.status(OK).send(
-//           sendSuccess({
-//             status: true,
-//             message: 'DeviceId Saved Successfully',
-//           })
-//         );
-//       } else {
-//         return res
-//           .status(OK)
-//           .send(sendError({ status: false, message: NO_USER }));
-//       }
-//     } else {
-//       return res
-//         .status(BADREQUEST)
-//         .send(sendError({ status: false, message: MISSING_FIELDS }));
-//     }
-//   } catch (error) {
-//     return res.status(INTERNALERROR).send(
-//       sendError({
-//         status: false,
-//         message: error.message,
-//         data: null,
-//       })
-//     );
-//   }
-// };
