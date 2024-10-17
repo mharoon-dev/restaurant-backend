@@ -8,6 +8,7 @@ import { userRoutes } from "./routes/user.js";
 import { productRoutes } from "./routes/product.js";
 import { categoryRoutes } from "./routes/category.js";
 import { orderRoutes } from "./routes/order.js";
+import User from "./models/Users.js";
 
 dotenv.config();
 const app = express();
@@ -48,8 +49,16 @@ app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/orders", orderRoutes);
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
+app.get("/", async (req, res) => {
+  try {
+    const users = await User.find({});
+    res.send(users);
+  } catch (error) {
+    console.error("Error getting all users:", error);
+    res.status(500).json({ message: "Failed to retrieve all users", error });
+  }
+
+  /******  313f06ac-8230-401a-b3ca-fb43d185dd0c  *******/
 });
 
 app.listen(process.env.PORT, () => {
