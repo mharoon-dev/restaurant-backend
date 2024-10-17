@@ -48,9 +48,9 @@ app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/orders", orderRoutes);
 
-// app.get("/", (req, res) => {
-//   res.send("Hello World!");
-// });
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is Running at http://localhost:${process.env.PORT}`);
