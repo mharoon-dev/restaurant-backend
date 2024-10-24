@@ -8,6 +8,7 @@ import { userRoutes } from "./routes/user.js";
 import { productRoutes } from "./routes/product.js";
 import { categoryRoutes } from "./routes/category.js";
 import { orderRoutes } from "./routes/order.js";
+import { coupenRoutes } from "./routes/coupen.js";
 
 dotenv.config();
 const app = express();
@@ -47,6 +48,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/coupens", coupenRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
