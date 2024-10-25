@@ -77,7 +77,7 @@ export const getMostSells = async (req, res) => {
         },
       })
         .sort({ sellsCount: -1 })
-        .limit(4);
+        .limit(3);
       res.status(200).json(products);
       return;
     } else {
