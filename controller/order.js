@@ -96,6 +96,16 @@ export const getOrder = async (req, res) => {
   }
 };
 
+export const getOrderByQuery = async (req, res) => {
+  const query = req.query;
+  try {
+    const orders = await Order.find(query);
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
+
 // get all orders
 export const getAllOrder = async (req, res) => {
   try {
