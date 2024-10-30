@@ -2,15 +2,18 @@ import Coupen from "../models/Coupen.js";
 
 export const addCoupen = (req, res) => {
   try {
-    const { code, discount } = req.body;
+    const { code, discount, active, desc } = req.body;
 
-    if (!code || !discount) {
+    if (!code || !discount || !active || !desc) {
       res.status(400).send({ message: "Content can not be empty!" });
     }
+    console.log(code, discount, active, desc);
 
     const newCoupen = new Coupen({
       code,
       discount,
+      active,
+      desc,
     });
 
     newCoupen.save();
@@ -50,6 +53,17 @@ export const getCoupen = async (req, res) => {
 
 export const updateCoupen = async (req, res) => {
   try {
+    if (req.body.code) {
+      // check the code is already exist or not
+      const checkCode = await Coupen.findOne({
+        code: req.body.code,
+        _id: { $ne: req.params.id },
+      });
+
+      if (checkCode) {
+        return res.status(400).json({ message: "Code already exist" });
+      }
+    }
     const coupen = await Coupen.findByIdAndUpdate(
       req.params.id,
       {

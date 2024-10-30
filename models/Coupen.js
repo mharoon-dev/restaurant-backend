@@ -11,6 +11,14 @@ const coupenSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    desc: {
+      type: String,
+      required: true,
+    },
+    active: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,
