@@ -72,7 +72,7 @@ export const editDeal = async (req, res) => {
     daysOfWeek,
   } = req.body;
   console.log(img);
-  
+
   try {
     // Find and validate deal
     const deal = await Deal.findById(id);
@@ -159,8 +159,9 @@ export const getActiveDeals = async (req, res) => {
       daysOfWeek: { $in: [currentDay] },
       startTime: { $lte: currentTime },
       endTime: { $gte: currentTime },
-    }).populate("productsIncluded.productId"); // Populate product details
+    }).populate("productsIncluded.productId");
 
+    console.log(activeDeals);
     res.status(200).json(activeDeals);
   } catch (error) {
     res.status(500).json({ message: error.message });

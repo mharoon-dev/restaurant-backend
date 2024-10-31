@@ -1,4 +1,6 @@
 import User from "../models/Users.js";
+import CryptoJS from "crypto-js";
+
 
 // UPDATE
 export const updateUser = async (req, res) => {
