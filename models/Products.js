@@ -33,7 +33,7 @@ const productSchema = new mongoose.Schema(
       default: 0,
     },
     variations: [variationSchema], // Add variations array
-  },  
+  },
   {
     timestamps: true,
   }

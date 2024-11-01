@@ -168,6 +168,17 @@ export const getActiveDeals = async (req, res) => {
   }
 };
 
+// get all deals
+
+export const getAllDeals = async (req, res) => {
+  try {
+    const deals = await Deal.find();
+    res.status(200).json(deals);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Get a single deal by ID with product details
 export const getSingleDeal = async (req, res) => {
   const { id } = req.params;

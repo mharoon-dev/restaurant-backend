@@ -98,7 +98,21 @@ export const getOrder = async (req, res) => {
 
 export const getOrderByQuery = async (req, res) => {
   const query = req.query;
+  console.log(query);
+
   try {
+    if (!query) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    if (query.userId) {
+      // find the ordersthrough the userId in the userDetails
+      const orders = await Order.find({
+        "userDetails._id": query.userId,
+      });
+
+      return res.status(200).json(orders);
+    }
     const orders = await Order.find(query);
     res.status(200).json(orders);
   } catch (error) {
