@@ -10,6 +10,7 @@ import { categoryRoutes } from "./routes/category.js";
 import { orderRoutes } from "./routes/order.js";
 import { coupenRoutes } from "./routes/coupen.js";
 import { dealRouter } from "./routes/deal.js";
+import { sliderRoutes } from "./routes/slider.js";
 
 dotenv.config();
 const app = express();
@@ -51,6 +52,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/coupens", coupenRoutes);
 app.use("/api/deals", dealRouter);
+app.use("/api/sliders", sliderRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
