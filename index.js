@@ -52,7 +52,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/coupens", coupenRoutes);
 app.use("/api/deals", dealRouter);
-app.use("/api/sliders", sliderRoutes);
+app.use("/api/c", sliderRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");

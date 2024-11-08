@@ -1,7 +1,8 @@
 import Slider from "../models/Slider.js";
 
 export const createSlider = async (req, res) => {
-  const { smallPara, heading1, heading2, card1, card2, card3, img } = req.body;
+  const { smallPara, heading1, heading2, card1, card2, card3, img, link } =
+    req.body;
   try {
     if (
       !smallPara ||
@@ -10,7 +11,8 @@ export const createSlider = async (req, res) => {
       !card1 ||
       !card2 ||
       !card3 ||
-      !img
+      !img ||
+      !link
     ) {
       return res.status(400).send({ message: "Required fields are missing!" });
     }
